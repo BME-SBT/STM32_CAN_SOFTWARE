@@ -37,12 +37,12 @@ The firmware under test is compiled unchanged for the PC. Everything that touche
 | `common/fault_mgr.[ch]` | Fault bitmask, severity, names |
 | `common/sched.[ch]` | Cooperative scheduler (`sched_run` on target, `sched_run_once` per simulated ms in the PC build) |
 | `hal/hal_*.h` | HAL interfaces: `hal_can`, `hal_time`, `hal_adc`, `hal_gpio` |
-| `hal/mock/hal_mock.[ch]` | PC implementation of the HAL plus test-side setters (`hal_adc_mock_set`, `hal_gpio_mock_set`, `hal_can_mock_force_state`, …) |
+| `hal/mock/hal_mock.[ch]` | PC implementation of the HAL plus setters for the simulator (`hal_adc_mock_set`, `hal_gpio_mock_set`, `hal_can_mock_force_state`, …) |
 
 Rules the firmware follows:
 
 - Bus bytes are produced and read **only** by the explicit pack/unpack functions in `can_msgs.c` (no struct casting, no bit-fields): little-endian, reserved bytes sent as 0 and ignored on receive.
-- Time is compared by subtraction, so the 32-bit millisecond wrap is harmless (covered by a test).
+- Time is compared by subtraction, so the 32-bit millisecond wrap is harmless.
 - Faults are written only from the main loop.
 - The application only sees data that is fresh and in range; invalid frames are counted and dropped by the protocol layer.
 
@@ -56,14 +56,6 @@ Rules the firmware follows:
 | `sim_dbc.[ch]` | Message/field definitions by name (offset, bits, signedness, scale, unit, enum names) used for typing and printing |
 | `sim_util.h` | Small helpers (case-insensitive compare, number parsing) |
 | `cansim.c` | The console program: command parser, live line editor, log formatting, `status` |
-
-### tests/
-
-| File | Notes |
-| :--- | :--- |
-| `test_util.h` | Minimal `RUN_TEST` / assertion / summary macros |
-| `test_codec.c` | Codec tests; also checks the firmware message table against `sim_dbc` |
-| `test_can_proto.c` | Protocol-layer tests against the simulated bus |
 
 ## 3. One simulated millisecond
 
@@ -100,7 +92,7 @@ Edit [control_config.h](../firmware/app_control/control_config.h) and rebuild. M
 3. `sim_dbc.c`: field table and a `MSG(...)` row (sender: `dut`, `motor` or `bms`).
 4. If the Control node receives it: add the ID to `rx_ids` and the counts in `control_node.c`; if it sends it: add a `tx_entries` row and a provider.
 5. If a simulated node sends it, send it with `sim_node_send()` so overrides apply.
-6. Update `test_codec.c`. `test_table_matches_dbc` fails if the firmware table and the console's field definitions disagree.
+6. Check that the firmware table (`can_msgs.c`) and the console's field definitions (`sim_dbc.c`) agree on ID and DLC.
 
 ### Add a fault
 
@@ -116,4 +108,4 @@ Implement `hal_can`, `hal_time`, `hal_adc`, `hal_gpio` for the target and call `
 
 ## 6. Build system
 
-[CMakeLists.txt](../CMakeLists.txt): one static library `sbt_sim` (firmware + mock HAL + `sim/` except the console), the executable `cansim`, and one executable per test registered with CTest. Warnings: `-Wall -Wextra`. Default build type: Debug. With MinGW the executables are linked statically so they run without the MinGW DLLs on PATH. [build.bat](../build.bat) wraps configure (Ninja generator), build, `ctest`, run and clean.
+[CMakeLists.txt](../CMakeLists.txt): one static library `sbt_sim` (firmware + mock HAL + `sim/` except the console), and the executable `cansim`. Warnings: `-Wall -Wextra`. Default build type: Debug. With MinGW the executable is linked statically so it runs without the MinGW DLLs on PATH. [build.bat](../build.bat) wraps configure (Ninja generator), build, run and clean.
