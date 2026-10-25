@@ -7,7 +7,7 @@ I did not sleep enough this week but V1 is done-ish, majority of code is origina
 - A Sonnet subagent of the 'architect' also cleaned up variable/function/config/whatever names, bringing the codebase naming conventions up to best practice (from non-existent...)
 - A 'publisher' agent wrote every documentation, deleted all my initial temp comments and wrote new ones where deemed necessary
 - Additionally, AI was used to set up the compilation, installing the necessary packages and constructing the builder file
-
+- I used AI to translate the raw CAN inputs as I could not be bothered to go through the hex stuff manually
 - V2 will have scriptable tests and injectable faults
 ### The rest of the readme is courtesy of the publisher agent
 
