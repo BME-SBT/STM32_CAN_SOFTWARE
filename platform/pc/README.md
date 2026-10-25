@@ -126,6 +126,56 @@ pedal 0                        # cause gone + pedal at zero -> back to READY
 
 After every action the log keeps running. 300 ms with nothing new prints a `settled` summary line, but slow reactions (a message timeout after 500 ms, the 1 s grace period before `F_COMM_LOST`) still appear afterwards, timed from the same action.
 
+
+Here's a section that lists every command you can type at the `~>` prompt. Paste it into the README wherever you like, for example right after **Commands**. Nothing else changes. Every command and alias here is one the console's command parser in `cansim.c` accepts.
+
+## Everything you can type
+
+Every command the console accepts. Commands and names are not case-sensitive (`PEDAL 50` works). Anything after `#` on a line is ignored.
+
+### Driver inputs
+
+| Type | Example | What it does |
+| :--- | :--- | :--- |
+| `pedal <pct>` | `pedal 50` | Sets the accelerator pedal, both sensor channels to the same value |
+| `pedal <pct_A> <pct_B>` | `pedal 50 20` | Sets the two sensor channels separately (different values = sensor fault) |
+| `enable on` | `enable on` | Enable switch ON |
+| `enable off` | `enable off` | Enable switch OFF |
+
+### CAN messages
+
+| Type | Example | What it does |
+| :--- | :--- | :--- |
+| `Control [field=value …]` | `Control throttle=0 enable=0` | Sends a Control frame (fields: `throttle`, `enable`, `alive`) |
+| `VehicleStatus [field=value …]` | `VehicleStatus state=DRIVE` | Sends a VehicleStatus frame (fields: `state`, `flags`, `fault_mask`) |
+| `MotorTemps [field=value …]` | `MotorTemps motor_temp=105` | Sends MotorTemps and keeps the value in the motor controller's frames (fields: `motor_temp`, `ctrl_temp`) |
+| `MotorData [field=value …]` | `MotorData current=230` | Sends MotorData and keeps the value (fields: `rpm`, `current`, `torque`) |
+| `BMSData [field=value …]` | `BMSData voltage=41.5 soc=12` | Sends BMSData and keeps the value (fields: `voltage`, `current`, `soc`) |
+| `BMSExtra [field=value …]` | `BMSExtra temp=50` | Sends BMSExtra and keeps the value (fields: `temp`, `mppt_current`, `fan_rpm`) |
+| `send <Message or ID> [field=value …]` | `send 0x300 soc=12` | Same as above; also accepts the message ID instead of the name |
+| `raw <id> [byte …]` | `raw 0x201 10 27 00` | Sends any frame: any ID, 0–8 data bytes in hex, no checks |
+| `release <Message or ID>` | `release MotorTemps` | The simulated node goes back to its own values for that message |
+| `release all` | `release all` | Releases every held value |
+
+### Information
+
+| Type | Example | What it does |
+| :--- | :--- | :--- |
+| `status` | `status` | Shows the state of every node, inputs, active faults, held values and the Control node's last frames |
+| `messages` | `messages` | Lists every message with its fields and units |
+| `list` | `list` | Same as `messages` |
+| `help` | `help` | Shows the command summary |
+
+### Time and exit
+
+| Type | Example | What it does |
+| :--- | :--- | :--- |
+| `wait <time>` | `wait 500`, `wait 500ms`, `wait 2s` | Scripts only: lets simulated time pass. In live mode time runs by itself |
+| `exit` | `exit` | Closes the program |
+| `quit` | `quit` | Same as `exit` |
+| Ctrl+C | | Same as `exit` |
+
+
 ## Battery
 
 The simulated BMS keeps the state of charge fixed at **80 %**. Driving changes only the current and the voltage drop under load (about 47.5 V at full throttle).
