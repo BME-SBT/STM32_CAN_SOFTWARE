@@ -8,25 +8,29 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 add_compile_options(-Wall -Wextra)
 
+# Shared firmware lives in <repo>/src; this file builds it for the PC.
+set(SRC ${CMAKE_CURRENT_SOURCE_DIR}/../../src)
+
 # Firmware (L2 and up, built against the mock HAL) + simulated network, in one library.
 add_library(sbt_sim STATIC
-  firmware/common/can_msgs.c
-  firmware/common/can_proto.c
-  firmware/common/can_ringbuf.c
-  firmware/common/fault_mgr.c
-  firmware/common/sched.c
-  firmware/app_control/control_node.c
-  firmware/app_control/pedal.c
-  firmware/app_control/safety.c
-  firmware/app_control/vehicle_fsm.c
-  firmware/hal/mock/hal_mock.c
+  ${SRC}/protocol/can_msgs.c
+  ${SRC}/protocol/can_proto.c
+  ${SRC}/protocol/can_ringbuf.c
+  ${SRC}/middleware/fault_mgr.c
+  ${SRC}/middleware/sched.c
+  ${SRC}/app/control/control_node.c
+  ${SRC}/app/control/pedal.c
+  ${SRC}/app/control/safety.c
+  ${SRC}/app/control/vehicle_fsm.c
+  hal/hal_mock.c
   sim/sim_bus.c
   sim/sim_dbc.c
   sim/sim_nodes.c
   sim/sim_world.c
 )
 target_include_directories(sbt_sim PUBLIC
-  firmware/hal firmware/hal/mock firmware/common firmware/app_control sim)
+  ${SRC}/hal ${SRC}/protocol ${SRC}/middleware ${SRC}/app/control
+  hal sim)
 target_link_libraries(sbt_sim PUBLIC m)
 
 # Static linking so the .exe files run without the MinGW DLLs on PATH.
@@ -36,4 +40,3 @@ endif()
 
 add_executable(cansim sim/cansim.c)
 target_link_libraries(cansim sbt_sim)
-
