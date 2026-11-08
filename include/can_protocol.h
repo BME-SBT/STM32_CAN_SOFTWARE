@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 
+
 #define Control_ID        0x100
 #define VehicleStatus_ID  0x101
 #define MotorTemps_ID     0x200
@@ -20,6 +21,7 @@ typedef struct {
     uint8_t padding:4;
 } control_msg_t;
 #pragma pack(pop)
+
 
 
 typedef enum{
